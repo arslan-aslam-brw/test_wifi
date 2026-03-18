@@ -586,8 +586,8 @@ class _ExtendedSettingsScreenState extends State<ExtendedSettingsScreen> {
             action: SnackBarAction(
               label: 'SHARE',
               onPressed: () async {
-                await Share.shareFiles([
-                  backupFile.path,
+                await Share.shareXFiles([
+                  backupFile.path as XFile,
                 ], text: 'Router Manager Backup');
               },
             ),

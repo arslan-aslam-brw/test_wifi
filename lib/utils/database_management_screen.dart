@@ -263,8 +263,8 @@ class _DatabaseManagementScreenState extends State<DatabaseManagementScreen> {
       final file = File(dbPath);
 
       if (await file.exists()) {
-        await Share.shareFiles([
-          dbPath,
+        await Share.shareXFiles([
+          dbPath as XFile,
         ], text: 'Router Manager Database Backup');
       } else {
         ScaffoldMessenger.of(context).showSnackBar(
@@ -296,7 +296,7 @@ class _DatabaseManagementScreenState extends State<DatabaseManagementScreen> {
       );
       await file.writeAsString(jsonString);
 
-      await Share.shareFiles([file.path], text: 'Database Export');
+      await Share.shareXFiles([file.path as XFile], text: 'Database Export');
     } catch (e) {
       ScaffoldMessenger.of(context).showSnackBar(
         SnackBar(

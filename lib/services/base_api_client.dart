@@ -1,12 +1,13 @@
-// lib/services/base_api_client.dart
 import 'dart:convert';
 import 'package:http/http.dart' as http;
 import 'package:flutter/foundation.dart';
+import 'package:flutter_secure_storage/flutter_secure_storage.dart';
 
 class BaseApiClient {
   final String baseUrl;
   String? _sessionId;
-  String? csrfToken;
+  String? _csrfToken;
+  final FlutterSecureStorage _secureStorage = const FlutterSecureStorage();
 
   BaseApiClient({required this.baseUrl});
 
@@ -15,7 +16,7 @@ class BaseApiClient {
       'Content-Type': 'application/json',
       'Accept': 'application/json',
       if (_sessionId != null) 'Cookie': 'SessionID_R3=$_sessionId',
-      if (csrfToken != null) 'X-CSRF-Token': csrfToken!,
+      if (_csrfToken != null) 'X-CSRF-Token': _csrfToken!,
     };
   }
 
@@ -122,13 +123,67 @@ class BaseApiClient {
     }
   }
 
-  // Helper methods
+  // ADD THESE METHODS for credential management
+  Future<void> saveCredentials(String username, String password) async {
+    try {
+      await _secureStorage.write(key: 'username', value: username);
+      await _secureStorage.write(
+        key: 'password',
+        value: _encodePassword(password),
+      );
+      debugPrint('Credentials saved securely');
+    } catch (e) {
+      debugPrint('Error saving credentials: $e');
+      rethrow;
+    }
+  }
+
+  Future<Map<String, String>?> getSavedCredentials() async {
+    try {
+      final username = await _secureStorage.read(key: 'username');
+      final password = await _secureStorage.read(key: 'password');
+
+      if (username != null && password != null) {
+        return {'username': username, 'password': password};
+      }
+      return null;
+    } catch (e) {
+      debugPrint('Error reading credentials: $e');
+      return null;
+    }
+  }
+
+  Future<void> clearCredentials() async {
+    try {
+      await _secureStorage.delete(key: 'username');
+      await _secureStorage.delete(key: 'password');
+      debugPrint('Credentials cleared');
+    } catch (e) {
+      debugPrint('Error clearing credentials: $e');
+      rethrow;
+    }
+  }
+
+  String _encodePassword(String password) {
+    return base64Encode(utf8.encode(password));
+  }
+
+  String _decodePassword(String encodedPassword) {
+    return utf8.decode(base64Decode(encodedPassword));
+  }
+
+  // Session management methods
   void setSessionId(String sessionId) => _sessionId = sessionId;
-  void setCsrfToken(String token) => csrfToken = token;
+  void setCsrfToken(String token) => _csrfToken = token;
+
   void clearAuth() {
     _sessionId = null;
-    csrfToken = null;
+    _csrfToken = null;
   }
 
   bool get isAuthenticated => _sessionId != null;
+
+  // Get current session info
+  String? get sessionId => _sessionId;
+  String? get csrfToken => _csrfToken;
 }

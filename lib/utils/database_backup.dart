@@ -1,4 +1,5 @@
 import 'dart:convert';
+import 'dart:ffi';
 import 'dart:io';
 import 'package:flutter/material.dart';
 import 'package:path/path.dart';
@@ -32,8 +33,8 @@ class DatabaseBackup {
   static Future<void> shareBackup() async {
     try {
       final backupFile = await createBackup();
-      await Share.shareFiles([
-        backupFile.path,
+      await Share.shareXFiles([
+        backupFile.path as XFile,
       ], text: 'Router Manager Backup - ${DateTime.now().toIso8601String()}');
     } catch (e) {
       debugPrint('Error sharing backup: $e');
@@ -84,9 +85,39 @@ class DatabaseBackup {
       final File jsonFile = File(jsonPath);
       await jsonFile.writeAsString(jsonEncode(exportData));
 
-      await Share.shareFiles([jsonFile.path], text: 'Router Manager Export');
+      await Share.shareXFiles([
+        jsonFile.path as XFile,
+      ], text: 'Router Manager Export');
     } catch (e) {
       debugPrint('Error exporting to JSON: $e');
+    }
+  }
+
+  // ADD THIS MISSING METHOD
+  static Future<void> clearAllData() async {
+    try {
+      final db = await DatabaseService().database;
+
+      // Get all tables (excluding sqlite_sequence)
+      final tables = await db.rawQuery(
+        "SELECT name FROM sqlite_master WHERE type='table' AND name NOT LIKE 'sqlite_%'",
+      );
+
+      // Delete all data from each table
+      await db.transaction((txn) async {
+        for (var table in tables) {
+          final tableName = table['name'] as String;
+          await txn.delete(tableName);
+        }
+      });
+
+      // Vacuum to reclaim space
+      await db.execute('VACUUM');
+
+      debugPrint('All data cleared successfully');
+    } catch (e) {
+      debugPrint('Error clearing data: $e');
+      rethrow;
     }
   }
 }

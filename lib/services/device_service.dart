@@ -37,7 +37,7 @@ class DeviceService {
         devices.add(DeviceModel.fromJson(client));
       }
     } else if (data is List) {
-      for (var item in data) {
+      for (var item in data as List<Map<String, dynamic>>) {
         devices.add(DeviceModel.fromJson(item));
       }
     }
