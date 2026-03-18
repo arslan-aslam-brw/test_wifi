@@ -29,10 +29,23 @@
 	<key>UIMainStoryboardFile</key>
 	<string>Main</string>
 	<key>UISupportedInterfaceOrientations</key>
+
+	<key>NSFaceIDUsageDescription</key>
+	<string>We need Face ID to securely authenticate you</string>
+	<key>NSLocalNetworkUsageDescription</key>
+	<string>This app needs to discover routers on your local network</string>
+	<key>NSBonjourServices</key>
+
 	<array>
 		<string>UIInterfaceOrientationPortrait</string>
 		<string>UIInterfaceOrientationLandscapeLeft</string>
 		<string>UIInterfaceOrientationLandscapeRight</string>
+
+		<string>_http._tcp</string>
+    	<string>_https._tcp</string>
+
+
+
 	</array>
 	<key>UISupportedInterfaceOrientations~ipad</key>
 	<array>
